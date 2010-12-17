@@ -5,10 +5,20 @@
 # is located and after "cabal install" or "cabal build" has been run
 
 rm -f *.tix
-mpirun -np 5 haskell-mpi-testsuite 2>receivers.log | tee sender.log
-hpc combine --output=rank01.tix rank0.tix rank1.tix
-hpc combine --output=rank23.tix rank2.tix rank3.tix
+[ -f coverage.dirs ] && (
+    readarray -t dirs < coverage.dirs
+    for dir in "${dirs[@]}" ; do
+        [ -d $d ] && rm -rf $dir
+    done
+    rm coverage.dirs
+)
+mpirun -np 5 bash -c 'mkdir $$ && echo $$ >> coverage.dirs && cd $$ && haskell-mpi-testsuite +RTS -ls' 2>receivers.log | tee sender.log
+
+# Combine logs from profiler and eventlog
+readarray -t dirs < coverage.dirs
+hpc combine --output=rank01.tix ${dirs[0]}/rank*.tix ${dirs[1]}/rank*.tix
+hpc combine --output=rank23.tix ${dirs[2]}/rank*.tix ${dirs[3]}/rank*.tix
 hpc combine --output=rank0123.tix rank01.tix rank23.tix
-hpc combine --output=haskell-mpi-testsuite.tix rank0123.tix rank4.tix
+hpc combine --output=haskell-mpi-testsuite.tix rank0123.tix ${dirs[4]}/rank*.tix
 hpc markup --destdir=./html haskell-mpi-testsuite.tix
 hpc report haskell-mpi-testsuite.tix
