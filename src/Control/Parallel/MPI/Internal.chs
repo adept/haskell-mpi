@@ -106,6 +106,10 @@ import Control.Monad (liftM, unless)
 import Control.Applicative ((<$>), (<*>))
 import Control.Exception
 
+#ifdef TRACE_MPI
+import GHC.Exts (traceEvent)
+#endif
+
 {# context prefix = "MPI" #}
 
 -- | Pointer to memory buffer that either holds data to be sent or is
@@ -379,7 +383,7 @@ wtimeIsGlobalKey = unsafePerformIO (peek wtimeIsGlobal_)
     block until data is copied from the send buffer by the MPI
 -}
 {# fun unsafe Send as ^
-          { id `BufferPtr', id `Count', fromDatatype `Datatype', fromRank `Rank', fromTag `Tag', fromComm `Comm' } -> `()' checkError*- #}
+          { id `BufferPtr', id `Count', fromDatatype `Datatype', fromRank `Rank', fromTag `Tag', 'fromCommTrace "send"' `Comm' } -> `()' 'checkErrorTrace "send"'*- #}
 {-| Variant of 'send' that would terminate only when receiving side
 actually starts receiving data. 
 -}
@@ -394,7 +398,7 @@ started, otherwise this call could terminate with MPI error.
 --   specified by (@Comm@, @Rank@, @Tag@) and stores it into buffer specified
 --   by (@BufferPtr@, @Count@, @Datatype@).
 {# fun unsafe Recv as ^
-          { id `BufferPtr', id `Count', fromDatatype `Datatype', fromRank `Rank', fromTag `Tag', fromComm `Comm', allocaCast- `Status' peekCast* } -> `()' checkError*- #}
+          { id `BufferPtr', id `Count', fromDatatype `Datatype', fromRank `Rank', fromTag `Tag', 'fromCommTrace "recv"' `Comm', allocaCast- `Status' peekCast* } -> `()' 'checkErrorTrace "recv"'*- #}
 -- | Send the values (as specified by @BufferPtr@, @Count@, @Datatype@) to
 --   the process specified by (@Comm@, @Rank@, @Tag@) in non-blocking mode.
 -- 
@@ -1175,3 +1179,21 @@ errorString code =
        peekCStringLen (ptr, cIntConv len)
   where
     errorString' = {# call unsafe Error_string as errorString_ #}
+
+-- Tracing helpers
+checkErrorTrace :: String -> CInt -> IO ()
+fromCommTrace :: String -> Comm -> MPIComm
+
+#ifdef TRACE_MPI
+myRank = show $ unsafePerformIO $ commRank commWorld
+
+checkErrorTrace fname code = do
+  traceEvent $ "MPI-FINISH " ++ myRank ++ " " ++ fname
+  checkError code
+
+fromCommTrace fname comm = unsafePerformIO ( traceEvent ("MPI-START " ++ myRank ++ " " ++ fname) >> return (fromComm comm) )
+#else
+checkErrorTrace _ = checkError
+fromCommTrace _ = fromComm
+#endif
+
