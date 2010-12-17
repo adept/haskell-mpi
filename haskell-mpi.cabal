@@ -152,7 +152,8 @@ executable  haskell-mpi-testsuite
     TestHelpers
   main-is:       Testsuite.hs
   if flag(test)
-    ghc-options: -fhpc
+    ghc-options: -fhpc -eventlog
+    cpp-options: -DTRACE_MPI
     build-depends: base >=3 && <=5, HUnit, testrunner, hpc, unix
   else
     buildable: False
