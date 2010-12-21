@@ -388,12 +388,12 @@ wtimeIsGlobalKey = unsafePerformIO (peek wtimeIsGlobal_)
 actually starts receiving data. 
 -}
 {# fun unsafe Ssend as ^
-          { id `BufferPtr', id `Count', fromDatatype `Datatype', fromRank `Rank', fromTag `Tag', fromComm `Comm' } -> `()' checkError*- #}
+          { id `BufferPtr', id `Count', fromDatatype `Datatype', fromRank `Rank', fromTag `Tag', 'fromCommTrace "ssend"' `Comm' } -> `()' 'checkErrorTrace "ssend"'*- #}
 {-| Variant of 'send' that expects the relevant 'recv' to be already
 started, otherwise this call could terminate with MPI error.
 -}
 {# fun unsafe Rsend as ^
-          { id `BufferPtr', id `Count', fromDatatype `Datatype', fromRank `Rank', fromTag `Tag', fromComm `Comm' } -> `()' checkError*- #}
+          { id `BufferPtr', id `Count', fromDatatype `Datatype', fromRank `Rank', fromTag `Tag', 'fromCommTrace "rsend"' `Comm' } -> `()' 'checkErrorTrace "rsend"'*- #}
 -- | Receives data from the process
 --   specified by (@Comm@, @Rank@, @Tag@) and stores it into buffer specified
 --   by (@BufferPtr@, @Count@, @Datatype@).
@@ -407,39 +407,39 @@ started, otherwise this call could terminate with MPI error.
 -- Operation would be considered complete as soon as MPI finishes
 -- copying the data from the send buffer. 
 {# fun unsafe Isend as ^
-           { id `BufferPtr', id `Count', fromDatatype `Datatype', fromRank `Rank', fromTag `Tag', fromComm `Comm', alloca- `Request' peekRequest*} -> `()' checkError*- #}
+           { id `BufferPtr', id `Count', fromDatatype `Datatype', fromRank `Rank', fromTag `Tag', 'fromCommTrace "isend"' `Comm', alloca- `Request' peekRequest*} -> `()' 'checkErrorTrace "isend"'*- #}
 -- | Variant of the 'isend' that would be considered complete only when
 --   receiving side actually starts receiving data. 
 {# fun unsafe Issend as ^
-           { id `BufferPtr', id `Count', fromDatatype `Datatype', fromRank `Rank', fromTag `Tag', fromComm `Comm', alloca- `Request' peekRequest*} -> `()' checkError*- #}
+           { id `BufferPtr', id `Count', fromDatatype `Datatype', fromRank `Rank', fromTag `Tag', 'fromCommTrace "issend"' `Comm', alloca- `Request' peekRequest*} -> `()' 'checkErrorTrace "issend"'*- #}
 -- | Non-blocking variant of 'recv'. Receives data from the process
 --   specified by (@Comm@, @Rank@, @Tag@) and stores it into buffer specified
 --   by (@BufferPtr@, @Count@, @Datatype@).
 {# fun Irecv as ^
-           { id `BufferPtr', id `Count', fromDatatype `Datatype', fromRank `Rank', fromTag `Tag', fromComm `Comm', alloca- `Request' peekRequest*} -> `()' checkError*- #}
+           { id `BufferPtr', id `Count', fromDatatype `Datatype', fromRank `Rank', fromTag `Tag', 'fromCommTrace "irecv"' `Comm', alloca- `Request' peekRequest*} -> `()' 'checkErrorTrace "irecv"'*- #}
 
 -- | Like 'isend', but stores @Request@ at the supplied pointer. Useful
 -- for making arrays of @Requests@ that could be passed to 'waitall'
 {# fun unsafe Isend as isendPtr
-           { id `BufferPtr', id `Count', fromDatatype `Datatype', fromRank `Rank', fromTag `Tag', fromComm `Comm', castPtr `Ptr Request'} -> `()' checkError*- #}
+           { id `BufferPtr', id `Count', fromDatatype `Datatype', fromRank `Rank', fromTag `Tag', 'fromCommTrace "isend"' `Comm', castPtr `Ptr Request'} -> `()' 'checkErrorTrace "isend"'*- #}
 
 -- | Like 'issend', but stores @Request@ at the supplied pointer. Useful
 -- for making arrays of @Requests@ that could be passed to 'waitall'
 {# fun unsafe Issend as issendPtr
-           { id `BufferPtr', id `Count', fromDatatype `Datatype', fromRank `Rank', fromTag `Tag', fromComm `Comm', castPtr `Ptr Request'} -> `()' checkError*- #}
+           { id `BufferPtr', id `Count', fromDatatype `Datatype', fromRank `Rank', fromTag `Tag', 'fromCommTrace "issend"' `Comm', castPtr `Ptr Request'} -> `()' 'checkErrorTrace "issend"'*- #}
 
 -- | Like 'irecv', but stores @Request@ at the supplied pointer. Useful
 -- for making arrays of @Requests@ that could be passed to 'waitall'
 {# fun Irecv as irecvPtr
-           { id `BufferPtr', id `Count', fromDatatype `Datatype', fromRank `Rank', fromTag `Tag', fromComm `Comm', castPtr `Ptr Request'} -> `()' checkError*- #}
+           { id `BufferPtr', id `Count', fromDatatype `Datatype', fromRank `Rank', fromTag `Tag', 'fromCommTrace "irecv"' `Comm', castPtr `Ptr Request'} -> `()' 'checkErrorTrace "irecv"'*- #}
 
 -- | Broadcast data from one member to all members of the communicator.
 {# fun unsafe Bcast as ^
-           { id `BufferPtr', id `Count', fromDatatype `Datatype', fromRank `Rank', fromComm `Comm'} -> `()' checkError*- #}
+           { id `BufferPtr', id `Count', fromDatatype `Datatype', fromRank `Rank', 'fromCommTrace "bcast"' `Comm'} -> `()' 'checkErrorTrace "bcast"'*- #}
 
 -- | Blocks until all processes on the communicator call this function.
 -- This function corresponds to @MPI_Barrier@.
-{# fun unsafe Barrier as ^ {fromComm `Comm'} -> `()' checkError*- #}
+{# fun unsafe Barrier as ^ {'fromCommTrace "barrier"' `Comm'} -> `()' 'checkErrorTrace "barrier"'*- #}
 
 -- | Blocking test for the completion of a send of receive.
 -- See 'test' for a non-blocking variant.
@@ -479,14 +479,14 @@ withRequest req f = do alloca $ \ptr -> do poke ptr req
 {# fun unsafe Scatter as ^
    { id `BufferPtr', id `Count', fromDatatype `Datatype',
      id `BufferPtr', id `Count', fromDatatype `Datatype',
-     fromRank `Rank', fromComm `Comm'} -> `()' checkError*- #}
+     fromRank `Rank', 'fromCommTrace "scatter"' `Comm'} -> `()' 'checkErrorTrace "scatter"'*- #}
 
 -- | Gather data from all members of a group to one
 -- member.
 {# fun unsafe Gather as ^
    { id `BufferPtr', id `Count', fromDatatype `Datatype',
      id `BufferPtr', id `Count', fromDatatype `Datatype',
-     fromRank `Rank', fromComm `Comm'} -> `()' checkError*- #}
+     fromRank `Rank', 'fromCommTrace "gather"' `Comm'} -> `()' 'checkErrorTrace "gather"'*- #}
 
 -- Note: We pass counts/displs as Ptr CInt so that caller could supply nullPtr here
 -- which would be impossible if we marshal arrays ourselves here.
@@ -496,41 +496,41 @@ withRequest req f = do alloca $ \ptr -> do poke ptr req
 {# fun unsafe Scatterv as ^
    { id `BufferPtr', id `Ptr CInt', id `Ptr CInt', fromDatatype `Datatype',
      id `BufferPtr', id `Count', fromDatatype `Datatype',
-     fromRank `Rank', fromComm `Comm'} -> `()' checkError*- #}
+     fromRank `Rank', 'fromCommTrace "scatterv"' `Comm'} -> `()' 'checkErrorTrace "scatterv"'*- #}
 
 -- | A variation of 'gather' which allows to use data segments of
 --   different length.
 {# fun unsafe Gatherv as ^
    { id `BufferPtr', id `Count', fromDatatype `Datatype',
      id `BufferPtr', id `Ptr CInt', id `Ptr CInt', fromDatatype `Datatype',
-     fromRank `Rank', fromComm `Comm'} -> `()' checkError*- #}
+     fromRank `Rank', 'fromCommTrace "gatherv"' `Comm'} -> `()' 'checkErrorTrace "gatherv"'*- #}
 
 -- | A variation of 'gather' where all members of
 -- a group receive the result.
 {# fun unsafe Allgather as ^
    { id `BufferPtr', id `Count', fromDatatype `Datatype',
      id `BufferPtr', id `Count', fromDatatype `Datatype',
-     fromComm `Comm'} -> `()' checkError*- #}
+     'fromCommTrace "allgather"' `Comm'} -> `()' 'checkErrorTrace "allgather"'*- #}
 
 -- | A variation of 'allgather' that allows to use data segments of
 --   different length.
 {# fun unsafe Allgatherv as ^
    { id `BufferPtr', id `Count', fromDatatype `Datatype',
      id `BufferPtr', id `Ptr CInt', id `Ptr CInt', fromDatatype `Datatype',
-     fromComm `Comm'} -> `()' checkError*- #}
+     'fromCommTrace "allgatherv"' `Comm'} -> `()' 'checkErrorTrace "allgatherv"'*- #}
 
 -- | Scatter/Gather data from all
 -- members to all members of a group (also called complete exchange)
 {# fun unsafe Alltoall as ^
    { id `BufferPtr', id `Count', fromDatatype `Datatype',
      id `BufferPtr', id `Count', fromDatatype `Datatype',
-     fromComm `Comm'} -> `()' checkError*- #}
+     'fromCommTrace "alltoall"' `Comm'} -> `()' 'checkErrorTrace "alltoall"'*- #}
 
 -- | A variant of 'alltoall' allows to use data segments of different length.
 {# fun unsafe Alltoallv as ^
    { id `BufferPtr', id `Ptr CInt', id `Ptr CInt', fromDatatype `Datatype',
      id `BufferPtr', id `Ptr CInt', id `Ptr CInt', fromDatatype `Datatype',
-     fromComm `Comm'} -> `()' checkError*- #}
+     'fromCommTrace "alltoallv"' `Comm'} -> `()' 'checkErrorTrace "alltoallv"'*- #}
 
 -- Reduce, allreduce and reduceScatter could call back to Haskell
 -- via user-defined ops, so they should be imported in "safe" mode
@@ -539,13 +539,13 @@ withRequest req f = do alloca $ \ptr -> do poke ptr req
 --   and delivers result to the single process.
 {# fun Reduce as ^
    { id `BufferPtr', id `BufferPtr', id `Count', fromDatatype `Datatype',
-     fromOperation `Operation', fromRank `Rank', fromComm `Comm'} -> `()' checkError*- #}
+     fromOperation `Operation', fromRank `Rank', 'fromCommTrace "reduce"' `Comm'} -> `()' 'checkErrorTrace "reduce"'*- #}
 
 -- | Applies predefined or user-defined reduction operations to data,
 --   and delivers result to all members of the group.
 {# fun Allreduce as ^
    { id `BufferPtr', id `BufferPtr', id `Count', fromDatatype `Datatype',
-     fromOperation `Operation', fromComm `Comm'} -> `()' checkError*- #}
+     fromOperation `Operation', 'fromCommTrace "allreduce"' `Comm'} -> `()' 'checkErrorTrace "allreduce"'*- #}
 
 -- | A combined reduction and scatter operation - result is split and
 --   parts are distributed among the participating processes.
@@ -558,7 +558,7 @@ withRequest req f = do alloca $ \ptr -> do poke ptr req
 #if 0
 {# fun Reduce_scatter_block as ^
    { id `BufferPtr', id `BufferPtr', id `Count', fromDatatype `Datatype',
-     fromOperation `Operation', fromComm `Comm'} -> `()' checkError*- #}
+     fromOperation `Operation', 'fromCommTrace "reduceScatterBlock"' `Comm'} -> `()' 'checkErrorTrace "reduceScatterBlock"'*- #}
 #else
 reduceScatterBlock :: BufferPtr -> BufferPtr -> Count -> Datatype -> Operation -> Comm -> IO ()
 reduceScatterBlock = error "reduceScatterBlock is not supported by OpenMPI"
@@ -568,7 +568,7 @@ reduceScatterBlock = error "reduceScatterBlock is not supported by OpenMPI"
 --   parts are distributed among the participating processes.
 {# fun Reduce_scatter as ^
    { id `BufferPtr', id `BufferPtr', id `Ptr CInt', fromDatatype `Datatype',
-     fromOperation `Operation', fromComm `Comm'} -> `()' checkError*- #}
+     fromOperation `Operation', 'fromCommTrace "reduceScatter"' `Comm'} -> `()' 'checkErrorTrace "reduceScatter"'*- #}
 
 -- TODO: In the following haddock block, mention SCAN and EXSCAN once
 -- they are implemented 
@@ -1188,10 +1188,10 @@ fromCommTrace :: String -> Comm -> MPIComm
 myRank = show $ unsafePerformIO $ commRank commWorld
 
 checkErrorTrace fname code = do
-  traceEvent $ "MPI-FINISH " ++ myRank ++ " " ++ fname
+  traceEvent $ myRank ++ " MPI-FINISH " ++ fname
   checkError code
 
-fromCommTrace fname comm = unsafePerformIO ( traceEvent ("MPI-START " ++ myRank ++ " " ++ fname) >> return (fromComm comm) )
+fromCommTrace fname comm = unsafePerformIO ( traceEvent (myRank ++ " MPI-START " ++ fname) >> return (fromComm comm) )
 #else
 checkErrorTrace _ = checkError
 fromCommTrace _ = fromComm
