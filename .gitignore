@@ -25,3 +25,6 @@ docs/HCAR/Issue19/template.pdf
 /test/examples/programs/speed/serializable/Bandwidth
 /sender.log
 /receivers.log
+/[0-9]*/haskell-mpi-testsuite.eventlog
+/[0-9]*/*.tix
+/coverage.dirs
