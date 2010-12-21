@@ -97,7 +97,7 @@ flag test
 
 Library
    extra-libraries:  mpi
-   build-tools:      c2hs
+   build-tools:      c2hs >= 0.16.3
    ghc-options: -Wall -fno-warn-name-shadowing -fno-warn-orphans
    c-sources:
       src/cbits/init_wrapper.c,
@@ -126,7 +126,7 @@ executable  haskell-mpi-testsuite
   hs-source-dirs:
     ./test
     ./src
-  build-tools:      c2hs
+  build-tools:      c2hs >= 0.16.3
   extra-libraries:  mpi
   ghc-options: -Wall -fno-warn-name-shadowing -fno-warn-orphans
   c-sources:
